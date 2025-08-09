@@ -11,7 +11,6 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 
 use async_trait::async_trait;
-use uuid::Uuid;
 
 use crate::storage::traits::{self, IdentityChange};
 use crate::{
@@ -308,7 +307,7 @@ impl traits::SessionStore for InMemSessionStore {
 pub struct InMemSenderKeyStore {
     // We use Cow keys in order to store owned values but compare to referenced ones.
     // See https://users.rust-lang.org/t/hashmap-with-tuple-keys/12711/6.
-    keys: HashMap<(Cow<'static, ProtocolAddress>, Uuid), SenderKeyRecord>,
+    keys: HashMap<Cow<'static, ProtocolAddress>, SenderKeyRecord>,
 }
 
 impl InMemSenderKeyStore {
@@ -331,25 +330,17 @@ impl traits::SenderKeyStore for InMemSenderKeyStore {
     async fn store_sender_key(
         &mut self,
         sender: &ProtocolAddress,
-        distribution_id: Uuid,
         record: &SenderKeyRecord,
     ) -> Result<()> {
-        self.keys.insert(
-            (Cow::Owned(sender.clone()), distribution_id),
-            record.clone(),
-        );
+        self.keys.insert(Cow::Owned(sender.clone()), record.clone());
         Ok(())
     }
 
     async fn load_sender_key(
         &mut self,
         sender: &ProtocolAddress,
-        distribution_id: Uuid,
     ) -> Result<Option<SenderKeyRecord>> {
-        Ok(self
-            .keys
-            .get(&(Cow::Borrowed(sender), distribution_id))
-            .cloned())
+        Ok(self.keys.get(&(Cow::Borrowed(sender))).cloned())
     }
 }
 
@@ -506,22 +497,16 @@ impl traits::SenderKeyStore for InMemSignalProtocolStore {
     async fn store_sender_key(
         &mut self,
         sender: &ProtocolAddress,
-        distribution_id: Uuid,
         record: &SenderKeyRecord,
     ) -> Result<()> {
-        self.sender_key_store
-            .store_sender_key(sender, distribution_id, record)
-            .await
+        self.sender_key_store.store_sender_key(sender, record).await
     }
 
     async fn load_sender_key(
         &mut self,
         sender: &ProtocolAddress,
-        distribution_id: Uuid,
     ) -> Result<Option<SenderKeyRecord>> {
-        self.sender_key_store
-            .load_sender_key(sender, distribution_id)
-            .await
+        self.sender_key_store.load_sender_key(sender).await
     }
 }
 

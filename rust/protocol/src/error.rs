@@ -8,7 +8,6 @@ use std::panic::UnwindSafe;
 use displaydoc::Display;
 use libsignal_core::curve::{CurveError, KeyType};
 use thiserror::Error;
-use uuid::Uuid;
 
 use crate::kem;
 
@@ -61,15 +60,15 @@ pub enum SignalProtocolError {
     /// invalid MAC key length <{0}>
     InvalidMacKeyLength(usize),
 
-    /// missing sender key state for distribution ID {distribution_id}
-    NoSenderKeyState { distribution_id: Uuid },
+    /// no sender key state
+    NoSenderKeyState,
 
     /// session with {0} not found
     SessionNotFound(crate::ProtocolAddress),
     /// invalid session: {0}
     InvalidSessionStructure(&'static str),
-    /// invalid sender key session with distribution ID {distribution_id}
-    InvalidSenderKeySession { distribution_id: Uuid },
+    /// invalid sender key session
+    InvalidSenderKeySession,
     /// session for {0} has invalid registration ID {1:X}
     InvalidRegistrationId(crate::ProtocolAddress, u32),
 

@@ -8,7 +8,6 @@ use prost::Message;
 use rand::{CryptoRng, Rng};
 use sha2::Sha256;
 use subtle::ConstantTimeEq;
-use uuid::Uuid;
 
 use crate::state::{KyberPreKeyId, PreKeyId, SignedPreKeyId};
 use crate::{
@@ -451,7 +450,6 @@ impl TryFrom<&[u8]> for PreKeySignalMessage {
 #[derive(Debug, Clone)]
 pub struct SenderKeyMessage {
     message_version: u8,
-    distribution_id: Uuid,
     chain_id: u32,
     iteration: u32,
     ciphertext: Box<[u8]>,
@@ -463,7 +461,6 @@ impl SenderKeyMessage {
 
     pub fn new<R: CryptoRng + Rng>(
         message_version: u8,
-        distribution_id: Uuid,
         chain_id: u32,
         iteration: u32,
         ciphertext: Box<[u8]>,
@@ -471,7 +468,6 @@ impl SenderKeyMessage {
         signature_key: &PrivateKey,
     ) -> Result<Self> {
         let proto_message = proto::wire::SenderKeyMessage {
-            distribution_uuid: Some(distribution_id.as_bytes().to_vec()),
             chain_id: Some(chain_id),
             iteration: Some(iteration),
             ciphertext: Some(ciphertext.to_vec()),
@@ -486,7 +482,6 @@ impl SenderKeyMessage {
         serialized.extend_from_slice(&signature[..]);
         Ok(Self {
             message_version: SENDERKEY_MESSAGE_CURRENT_VERSION,
-            distribution_id,
             chain_id,
             iteration,
             ciphertext,
@@ -506,11 +501,6 @@ impl SenderKeyMessage {
     #[inline]
     pub fn message_version(&self) -> u8 {
         self.message_version
-    }
-
-    #[inline]
-    pub fn distribution_id(&self) -> Uuid {
-        self.distribution_id
     }
 
     #[inline]
@@ -562,10 +552,6 @@ impl TryFrom<&[u8]> for SenderKeyMessage {
             proto::wire::SenderKeyMessage::decode(&value[1..value.len() - Self::SIGNATURE_LEN])
                 .map_err(|_| SignalProtocolError::InvalidProtobufEncoding)?;
 
-        let distribution_id = proto_structure
-            .distribution_uuid
-            .and_then(|bytes| Uuid::from_slice(bytes.as_slice()).ok())
-            .ok_or(SignalProtocolError::InvalidProtobufEncoding)?;
         let chain_id = proto_structure
             .chain_id
             .ok_or(SignalProtocolError::InvalidProtobufEncoding)?;
@@ -579,7 +565,6 @@ impl TryFrom<&[u8]> for SenderKeyMessage {
 
         Ok(SenderKeyMessage {
             message_version,
-            distribution_id,
             chain_id,
             iteration,
             ciphertext,
@@ -591,7 +576,6 @@ impl TryFrom<&[u8]> for SenderKeyMessage {
 #[derive(Debug, Clone)]
 pub struct SenderKeyDistributionMessage {
     message_version: u8,
-    distribution_id: Uuid,
     chain_id: u32,
     iteration: u32,
     chain_key: Vec<u8>,
@@ -602,14 +586,12 @@ pub struct SenderKeyDistributionMessage {
 impl SenderKeyDistributionMessage {
     pub fn new(
         message_version: u8,
-        distribution_id: Uuid,
         chain_id: u32,
         iteration: u32,
         chain_key: Vec<u8>,
         signing_key: PublicKey,
     ) -> Result<Self> {
         let proto_message = proto::wire::SenderKeyDistributionMessage {
-            distribution_uuid: Some(distribution_id.as_bytes().to_vec()),
             chain_id: Some(chain_id),
             iteration: Some(iteration),
             chain_key: Some(chain_key.clone()),
@@ -623,7 +605,6 @@ impl SenderKeyDistributionMessage {
 
         Ok(Self {
             message_version,
-            distribution_id,
             chain_id,
             iteration,
             chain_key,
@@ -635,11 +616,6 @@ impl SenderKeyDistributionMessage {
     #[inline]
     pub fn message_version(&self) -> u8 {
         self.message_version
-    }
-
-    #[inline]
-    pub fn distribution_id(&self) -> Result<Uuid> {
-        Ok(self.distribution_id)
     }
 
     #[inline]
@@ -699,10 +675,6 @@ impl TryFrom<&[u8]> for SenderKeyDistributionMessage {
         let proto_structure = proto::wire::SenderKeyDistributionMessage::decode(&value[1..])
             .map_err(|_| SignalProtocolError::InvalidProtobufEncoding)?;
 
-        let distribution_id = proto_structure
-            .distribution_uuid
-            .and_then(|bytes| Uuid::from_slice(bytes.as_slice()).ok())
-            .ok_or(SignalProtocolError::InvalidProtobufEncoding)?;
         let chain_id = proto_structure
             .chain_id
             .ok_or(SignalProtocolError::InvalidProtobufEncoding)?;
@@ -724,7 +696,6 @@ impl TryFrom<&[u8]> for SenderKeyDistributionMessage {
 
         Ok(SenderKeyDistributionMessage {
             message_version,
-            distribution_id,
             chain_id,
             iteration,
             chain_key,
@@ -1026,7 +997,6 @@ mod tests {
         let signature_key_pair = KeyPair::generate(&mut csprng);
         let sender_key_message = SenderKeyMessage::new(
             SENDERKEY_MESSAGE_CURRENT_VERSION,
-            Uuid::from_u128(0xd1d1d1d1_7000_11eb_b32a_33b8a8a487a6),
             42,
             7,
             [1u8, 2, 3].into(),
@@ -1112,7 +1082,6 @@ mod tests {
 
         let sender_key_message = SenderKeyMessage::new(
             3,
-            Uuid::nil(),
             1,
             2,
             Box::from(b"test".to_owned()),

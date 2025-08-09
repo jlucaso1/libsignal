@@ -6,7 +6,6 @@
 //! Traits defining several stores used throughout the Signal Protocol.
 
 use async_trait::async_trait;
-use uuid::Uuid;
 
 use crate::error::Result;
 use crate::sender_keys::SenderKeyRecord;
@@ -158,7 +157,6 @@ pub trait SenderKeyStore {
     async fn store_sender_key(
         &mut self,
         sender: &ProtocolAddress,
-        distribution_id: Uuid,
         // TODO: pass this by value!
         record: &SenderKeyRecord,
     ) -> Result<()>;
@@ -167,7 +165,6 @@ pub trait SenderKeyStore {
     async fn load_sender_key(
         &mut self,
         sender: &ProtocolAddress,
-        distribution_id: Uuid,
     ) -> Result<Option<SenderKeyRecord>>;
 }
 

@@ -53,7 +53,6 @@ pub fn ratchet_forward_result(c: &mut Criterion) -> Result<(), SignalProtocolErr
             group_encrypt(
                 &mut alice_store,
                 &sender_address,
-                distribution_id,
                 format!("nefarious plotting {i}").as_bytes(),
                 &mut csprng,
             )
@@ -64,7 +63,6 @@ pub fn ratchet_forward_result(c: &mut Criterion) -> Result<(), SignalProtocolErr
         let alice_ciphertext = group_encrypt(
             &mut alice_store,
             &sender_address,
-            distribution_id,
             "you got the plan?".as_bytes(),
             &mut csprng,
         )
