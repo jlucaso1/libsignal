@@ -49,7 +49,7 @@ pub use group_cipher::{
     process_sender_key_distribution_message,
 };
 pub use identity_key::{IdentityKey, IdentityKeyPair};
-pub use libsignal_core::curve::{KeyPair, PrivateKey, PublicKey};
+pub use libsignal_core::curve::{KeyPair, PrivateKey, PublicKey, CurveError};
 pub use libsignal_core::{
     Aci, DeviceId, Pni, ProtocolAddress, ServiceId, ServiceIdFixedWidthBinaryBytes, ServiceIdKind,
 };
