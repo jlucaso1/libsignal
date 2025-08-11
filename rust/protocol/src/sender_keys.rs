@@ -111,7 +111,7 @@ impl SenderChainKey {
         ))
     }
 
-    pub(crate) fn sender_message_key(&self) -> SenderMessageKey {
+    pub fn sender_message_key(&self) -> SenderMessageKey {
         SenderMessageKey::new(self.iteration, self.get_derivative(Self::MESSAGE_KEY_SEED))
     }
 
