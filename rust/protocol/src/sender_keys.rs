@@ -97,7 +97,7 @@ impl SenderChainKey {
         &self.chain_key
     }
 
-    pub(crate) fn next(&self) -> Result<SenderChainKey, SignalProtocolError> {
+    pub fn next(&self) -> Result<SenderChainKey, SignalProtocolError> {
         let new_iteration = self.iteration.checked_add(1).ok_or_else(|| {
             SignalProtocolError::InvalidState(
                 "sender_chain_key_next",
