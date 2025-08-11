@@ -14,7 +14,7 @@ use crate::{consts, PrivateKey, PublicKey, SignalProtocolError};
 
 /// A distinct error type to keep from accidentally propagating deserialization errors.
 #[derive(Debug)]
-pub(crate) struct InvalidSessionError(&'static str);
+pub struct InvalidSessionError(&'static str);
 
 impl std::fmt::Display for InvalidSessionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -23,7 +23,7 @@ impl std::fmt::Display for InvalidSessionError {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct SenderMessageKey {
+pub struct SenderMessageKey {
     iteration: u32,
     iv: Vec<u8>,
     cipher_key: Vec<u8>,
@@ -31,7 +31,7 @@ pub(crate) struct SenderMessageKey {
 }
 
 impl SenderMessageKey {
-    pub(crate) fn new(iteration: u32, seed: Vec<u8>) -> Self {
+    pub fn new(iteration: u32, seed: Vec<u8>) -> Self {
         let mut derived = [0; 48];
         hkdf::Hkdf::<sha2::Sha256>::new(None, &seed)
             .expand(b"WhisperGroup", &mut derived)
@@ -73,7 +73,7 @@ impl SenderMessageKey {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct SenderChainKey {
+pub struct SenderChainKey {
     iteration: u32,
     chain_key: Vec<u8>,
 }
@@ -129,7 +129,7 @@ impl SenderChainKey {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct SenderKeyState {
+pub struct SenderKeyState {
     state: storage_proto::SenderKeyStateStructure,
 }
 
@@ -178,7 +178,7 @@ impl SenderKeyState {
         self.state.chain_id
     }
 
-    pub(crate) fn sender_chain_key(&self) -> Option<SenderChainKey> {
+    pub fn sender_chain_key(&self) -> Option<SenderChainKey> {
         let sender_chain = self.state.sender_chain_key.as_ref()?;
         Some(SenderChainKey::new(
             sender_chain.iteration,
@@ -186,11 +186,11 @@ impl SenderKeyState {
         ))
     }
 
-    pub(crate) fn set_sender_chain_key(&mut self, chain_key: SenderChainKey) {
+    pub fn set_sender_chain_key(&mut self, chain_key: SenderChainKey) {
         self.state.sender_chain_key = Some(chain_key.as_protobuf());
     }
 
-    pub(crate) fn signing_key_public(&self) -> Result<PublicKey, InvalidSessionError> {
+    pub fn signing_key_public(&self) -> Result<PublicKey, InvalidSessionError> {
         if let Some(ref signing_key) = self.state.sender_signing_key {
             PublicKey::try_from(&signing_key.public[..])
                 .map_err(|_| InvalidSessionError("invalid public signing key"))
@@ -199,7 +199,7 @@ impl SenderKeyState {
         }
     }
 
-    pub(crate) fn signing_key_private(&self) -> Result<PrivateKey, InvalidSessionError> {
+    pub fn signing_key_private(&self) -> Result<PrivateKey, InvalidSessionError> {
         if let Some(ref signing_key) = self.state.sender_signing_key {
             PrivateKey::deserialize(&signing_key.private)
                 .map_err(|_| InvalidSessionError("invalid private signing key"))
@@ -212,7 +212,7 @@ impl SenderKeyState {
         self.state.clone()
     }
 
-    pub(crate) fn add_sender_message_key(&mut self, sender_message_key: &SenderMessageKey) {
+    pub fn add_sender_message_key(&mut self, sender_message_key: &SenderMessageKey) {
         self.state
             .sender_message_keys
             .push(sender_message_key.as_protobuf());
@@ -259,16 +259,14 @@ impl SenderKeyRecord {
         Ok(Self { states })
     }
 
-    pub(crate) fn sender_key_state(&self) -> Result<&SenderKeyState, InvalidSessionError> {
+    pub fn sender_key_state(&self) -> Result<&SenderKeyState, InvalidSessionError> {
         if !self.states.is_empty() {
             return Ok(&self.states[0]);
         }
         Err(InvalidSessionError("empty sender key state"))
     }
 
-    pub(crate) fn sender_key_state_mut(
-        &mut self,
-    ) -> Result<&mut SenderKeyState, InvalidSessionError> {
+    pub fn sender_key_state_mut(&mut self) -> Result<&mut SenderKeyState, InvalidSessionError> {
         if !self.states.is_empty() {
             return Ok(&mut self.states[0]);
         }
