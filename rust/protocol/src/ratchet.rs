@@ -10,7 +10,7 @@ use rand::{CryptoRng, Rng};
 
 pub use self::keys::{ChainKey, MessageKeyGenerator, RootKey};
 pub use self::params::{AliceSignalProtocolParameters, BobSignalProtocolParameters, UsePQRatchet};
-use crate::protocol::{CIPHERTEXT_MESSAGE_CURRENT_VERSION, CIPHERTEXT_MESSAGE_PRE_KYBER_VERSION};
+pub use crate::protocol::{CIPHERTEXT_MESSAGE_CURRENT_VERSION, CIPHERTEXT_MESSAGE_PRE_KYBER_VERSION};
 use crate::state::SessionState;
 use crate::{consts, KeyPair, Result, SessionRecord, SignalProtocolError};
 

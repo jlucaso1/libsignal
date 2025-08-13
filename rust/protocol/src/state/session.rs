@@ -17,7 +17,7 @@ use crate::{consts, kem, IdentityKey, KeyPair, PrivateKey, PublicKey, SignalProt
 
 /// A distinct error type to keep from accidentally propagating deserialization errors.
 #[derive(Debug)]
-pub(crate) struct InvalidSessionError(&'static str);
+pub struct InvalidSessionError(&'static str);
 
 impl std::fmt::Display for InvalidSessionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -32,7 +32,7 @@ impl From<InvalidSessionError> for SignalProtocolError {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct UnacknowledgedPreKeyMessageItems<'a> {
+pub struct UnacknowledgedPreKeyMessageItems<'a> {
     pre_key_id: Option<PreKeyId>,
     signed_pre_key_id: SignedPreKeyId,
     base_key: PublicKey,
@@ -62,42 +62,42 @@ impl<'a> UnacknowledgedPreKeyMessageItems<'a> {
         }
     }
 
-    pub(crate) fn pre_key_id(&self) -> Option<PreKeyId> {
+    pub fn pre_key_id(&self) -> Option<PreKeyId> {
         self.pre_key_id
     }
 
-    pub(crate) fn signed_pre_key_id(&self) -> SignedPreKeyId {
+    pub fn signed_pre_key_id(&self) -> SignedPreKeyId {
         self.signed_pre_key_id
     }
 
-    pub(crate) fn base_key(&self) -> &PublicKey {
+    pub fn base_key(&self) -> &PublicKey {
         &self.base_key
     }
 
-    pub(crate) fn kyber_pre_key_id(&self) -> Option<KyberPreKeyId> {
+    pub fn kyber_pre_key_id(&self) -> Option<KyberPreKeyId> {
         self.kyber_pre_key_id
     }
 
-    pub(crate) fn kyber_ciphertext(&self) -> Option<&'a [u8]> {
+    pub fn kyber_ciphertext(&self) -> Option<&'a [u8]> {
         self.kyber_ciphertext
     }
 
-    pub(crate) fn timestamp(&self) -> SystemTime {
+    pub fn timestamp(&self) -> SystemTime {
         self.timestamp
     }
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct SessionState {
+pub struct SessionState {
     session: SessionStructure,
 }
 
 impl SessionState {
-    pub(crate) fn from_session_structure(session: SessionStructure) -> Self {
+    pub fn from_session_structure(session: SessionStructure) -> Self {
         Self { session }
     }
 
-    pub(crate) fn new(
+    pub fn new(
         version: u8,
         our_identity: &IdentityKey,
         their_identity: &IdentityKey,
@@ -124,19 +124,19 @@ impl SessionState {
         }
     }
 
-    pub(crate) fn alice_base_key(&self) -> &[u8] {
+    pub fn alice_base_key(&self) -> &[u8] {
         // Check the length before returning?
         &self.session.alice_base_key
     }
 
-    pub(crate) fn session_version(&self) -> Result<u32, InvalidSessionError> {
+    pub fn session_version(&self) -> Result<u32, InvalidSessionError> {
         match self.session.session_version {
             0 => Ok(2),
             v => Ok(v),
         }
     }
 
-    pub(crate) fn remote_identity_key(&self) -> Result<Option<IdentityKey>, InvalidSessionError> {
+    pub fn remote_identity_key(&self) -> Result<Option<IdentityKey>, InvalidSessionError> {
         match self.session.remote_identity_public.len() {
             0 => Ok(None),
             _ => Ok(Some(
@@ -146,20 +146,20 @@ impl SessionState {
         }
     }
 
-    pub(crate) fn remote_identity_key_bytes(&self) -> Result<Option<Vec<u8>>, InvalidSessionError> {
+    pub fn remote_identity_key_bytes(&self) -> Result<Option<Vec<u8>>, InvalidSessionError> {
         Ok(self.remote_identity_key()?.map(|k| k.serialize().to_vec()))
     }
 
-    pub(crate) fn local_identity_key(&self) -> Result<IdentityKey, InvalidSessionError> {
+    pub fn local_identity_key(&self) -> Result<IdentityKey, InvalidSessionError> {
         IdentityKey::decode(&self.session.local_identity_public)
             .map_err(|_| InvalidSessionError("invalid local identity key"))
     }
 
-    pub(crate) fn local_identity_key_bytes(&self) -> Result<Vec<u8>, InvalidSessionError> {
+    pub fn local_identity_key_bytes(&self) -> Result<Vec<u8>, InvalidSessionError> {
         Ok(self.local_identity_key()?.serialize().to_vec())
     }
 
-    pub(crate) fn session_with_self(&self) -> Result<bool, InvalidSessionError> {
+    pub fn session_with_self(&self) -> Result<bool, InvalidSessionError> {
         if let Some(remote_id) = self.remote_identity_key_bytes()? {
             let local_id = self.local_identity_key_bytes()?;
             return Ok(remote_id == local_id);
@@ -169,26 +169,26 @@ impl SessionState {
         Ok(false)
     }
 
-    pub(crate) fn previous_counter(&self) -> u32 {
+    pub fn previous_counter(&self) -> u32 {
         self.session.previous_counter
     }
 
-    pub(crate) fn set_previous_counter(&mut self, ctr: u32) {
+    pub fn set_previous_counter(&mut self, ctr: u32) {
         self.session.previous_counter = ctr;
     }
 
-    pub(crate) fn root_key(&self) -> Result<RootKey, InvalidSessionError> {
+    pub fn root_key(&self) -> Result<RootKey, InvalidSessionError> {
         let root_key_bytes = self.session.root_key[..]
             .try_into()
             .map_err(|_| InvalidSessionError("invalid root key"))?;
         Ok(RootKey::new(root_key_bytes))
     }
 
-    pub(crate) fn set_root_key(&mut self, root_key: &RootKey) {
+    pub fn set_root_key(&mut self, root_key: &RootKey) {
         self.session.root_key = root_key.key().to_vec();
     }
 
-    pub(crate) fn sender_ratchet_key(&self) -> Result<PublicKey, InvalidSessionError> {
+    pub fn sender_ratchet_key(&self) -> Result<PublicKey, InvalidSessionError> {
         match self.session.sender_chain {
             None => Err(InvalidSessionError("missing sender chain")),
             Some(ref c) => PublicKey::deserialize(&c.sender_ratchet_key)
@@ -196,11 +196,11 @@ impl SessionState {
         }
     }
 
-    pub(crate) fn sender_ratchet_key_for_logging(&self) -> Result<String, InvalidSessionError> {
+    pub fn sender_ratchet_key_for_logging(&self) -> Result<String, InvalidSessionError> {
         Ok(hex::encode(self.sender_ratchet_key()?.public_key_bytes()))
     }
 
-    pub(crate) fn sender_ratchet_private_key(&self) -> Result<PrivateKey, InvalidSessionError> {
+    pub fn sender_ratchet_private_key(&self) -> Result<PrivateKey, InvalidSessionError> {
         match self.session.sender_chain {
             None => Err(InvalidSessionError("missing sender chain")),
             Some(ref c) => PrivateKey::deserialize(&c.sender_ratchet_key_private)
@@ -222,7 +222,7 @@ impl SessionState {
         Ok(true)
     }
 
-    pub(crate) fn all_receiver_chain_logging_info(&self) -> Vec<(Vec<u8>, Option<u32>)> {
+    pub fn all_receiver_chain_logging_info(&self) -> Vec<(Vec<u8>, Option<u32>)> {
         let mut results = vec![];
         for chain in self.session.receiver_chains.iter() {
             let sender_ratchet_public = chain.sender_ratchet_key.clone();
@@ -234,7 +234,7 @@ impl SessionState {
         results
     }
 
-    pub(crate) fn get_receiver_chain(
+    pub fn get_receiver_chain(
         &self,
         sender: &PublicKey,
     ) -> Result<Option<(session_structure::Chain, usize)>, InvalidSessionError> {
@@ -252,7 +252,7 @@ impl SessionState {
         Ok(None)
     }
 
-    pub(crate) fn get_receiver_chain_key(
+    pub fn get_receiver_chain_key(
         &self,
         sender: &PublicKey,
     ) -> Result<Option<ChainKey>, InvalidSessionError> {
@@ -270,7 +270,7 @@ impl SessionState {
         }
     }
 
-    pub(crate) fn add_receiver_chain(&mut self, sender: &PublicKey, chain_key: &ChainKey) {
+    pub fn add_receiver_chain(&mut self, sender: &PublicKey, chain_key: &ChainKey) {
         let chain_key = session_structure::chain::ChainKey {
             index: chain_key.index(),
             key: chain_key.key().to_vec(),
@@ -296,12 +296,12 @@ impl SessionState {
         }
     }
 
-    pub(crate) fn with_receiver_chain(mut self, sender: &PublicKey, chain_key: &ChainKey) -> Self {
+    pub fn with_receiver_chain(mut self, sender: &PublicKey, chain_key: &ChainKey) -> Self {
         self.add_receiver_chain(sender, chain_key);
         self
     }
 
-    pub(crate) fn set_sender_chain(&mut self, sender: &KeyPair, next_chain_key: &ChainKey) {
+    pub fn set_sender_chain(&mut self, sender: &KeyPair, next_chain_key: &ChainKey) {
         let chain_key = session_structure::chain::ChainKey {
             index: next_chain_key.index(),
             key: next_chain_key.key().to_vec(),
@@ -317,12 +317,12 @@ impl SessionState {
         self.session.sender_chain = Some(new_chain);
     }
 
-    pub(crate) fn with_sender_chain(mut self, sender: &KeyPair, next_chain_key: &ChainKey) -> Self {
+    pub fn with_sender_chain(mut self, sender: &KeyPair, next_chain_key: &ChainKey) -> Self {
         self.set_sender_chain(sender, next_chain_key);
         self
     }
 
-    pub(crate) fn get_sender_chain_key(&self) -> Result<ChainKey, InvalidSessionError> {
+    pub fn get_sender_chain_key(&self) -> Result<ChainKey, InvalidSessionError> {
         let sender_chain = self
             .session
             .sender_chain
@@ -341,11 +341,11 @@ impl SessionState {
         Ok(ChainKey::new(chain_key_bytes, chain_key.index))
     }
 
-    pub(crate) fn get_sender_chain_key_bytes(&self) -> Result<Vec<u8>, InvalidSessionError> {
+    pub fn get_sender_chain_key_bytes(&self) -> Result<Vec<u8>, InvalidSessionError> {
         Ok(self.get_sender_chain_key()?.key().to_vec())
     }
 
-    pub(crate) fn set_sender_chain_key(&mut self, next_chain_key: &ChainKey) {
+    pub fn set_sender_chain_key(&mut self, next_chain_key: &ChainKey) {
         let chain_key = session_structure::chain::ChainKey {
             index: next_chain_key.index(),
             key: next_chain_key.key().to_vec(),
@@ -369,7 +369,7 @@ impl SessionState {
         self.session.sender_chain = Some(new_chain);
     }
 
-    pub(crate) fn get_message_keys(
+    pub fn get_message_keys(
         &mut self,
         sender: &PublicKey,
         counter: u32,
@@ -395,7 +395,7 @@ impl SessionState {
         Ok(None)
     }
 
-    pub(crate) fn set_message_keys(
+    pub fn set_message_keys(
         &mut self,
         sender: &PublicKey,
         message_keys: MessageKeyGenerator,
@@ -415,7 +415,7 @@ impl SessionState {
         Ok(())
     }
 
-    pub(crate) fn set_receiver_chain_key(
+    pub fn set_receiver_chain_key(
         &mut self,
         sender: &PublicKey,
         chain_key: &ChainKey,
@@ -434,7 +434,7 @@ impl SessionState {
         Ok(())
     }
 
-    pub(crate) fn set_unacknowledged_pre_key_message(
+    pub fn set_unacknowledged_pre_key_message(
         &mut self,
         pre_key_id: Option<PreKeyId>,
         signed_ec_pre_key_id: SignedPreKeyId,
@@ -454,7 +454,7 @@ impl SessionState {
         self.session.pending_pre_key = Some(pending);
     }
 
-    pub(crate) fn set_kyber_ciphertext(&mut self, ciphertext: kem::SerializedCiphertext) {
+    pub fn set_kyber_ciphertext(&mut self, ciphertext: kem::SerializedCiphertext) {
         let pending = session_structure::PendingKyberPreKey {
             pre_key_id: u32::MAX, // has to be set to the actual value separately
             ciphertext: ciphertext.into_vec(),
@@ -462,10 +462,7 @@ impl SessionState {
         self.session.pending_kyber_pre_key = Some(pending);
     }
 
-    pub(crate) fn set_unacknowledged_kyber_pre_key_id(
-        &mut self,
-        signed_kyber_pre_key_id: KyberPreKeyId,
-    ) {
+    pub fn set_unacknowledged_kyber_pre_key_id(&mut self, signed_kyber_pre_key_id: KyberPreKeyId) {
         let pending = self
             .session
             .pending_kyber_pre_key
@@ -474,7 +471,7 @@ impl SessionState {
         pending.pre_key_id = signed_kyber_pre_key_id.into();
     }
 
-    pub(crate) fn unacknowledged_pre_key_message_items(
+    pub fn unacknowledged_pre_key_message_items(
         &self,
     ) -> Result<Option<UnacknowledgedPreKeyMessageItems>, InvalidSessionError> {
         if let Some(ref pending_pre_key) = self.session.pending_pre_key {
@@ -491,7 +488,7 @@ impl SessionState {
         }
     }
 
-    pub(crate) fn clear_unacknowledged_pre_key_message(&mut self) {
+    pub fn clear_unacknowledged_pre_key_message(&mut self) {
         // Explicitly destructuring the SessionStructure in case there are new
         // pending fields that need to be cleared.
         let SessionStructure {
@@ -516,30 +513,30 @@ impl SessionState {
         self.session.pending_kyber_pre_key = None;
     }
 
-    pub(crate) fn set_remote_registration_id(&mut self, registration_id: u32) {
+    pub fn set_remote_registration_id(&mut self, registration_id: u32) {
         self.session.remote_registration_id = registration_id;
     }
 
-    pub(crate) fn remote_registration_id(&self) -> u32 {
+    pub fn remote_registration_id(&self) -> u32 {
         self.session.remote_registration_id
     }
 
-    pub(crate) fn set_local_registration_id(&mut self, registration_id: u32) {
+    pub fn set_local_registration_id(&mut self, registration_id: u32) {
         self.session.local_registration_id = registration_id;
     }
 
-    pub(crate) fn local_registration_id(&self) -> u32 {
+    pub fn local_registration_id(&self) -> u32 {
         self.session.local_registration_id
     }
 
-    pub(crate) fn get_kyber_ciphertext(&self) -> Option<&Vec<u8>> {
+    pub fn get_kyber_ciphertext(&self) -> Option<&Vec<u8>> {
         self.session
             .pending_kyber_pre_key
             .as_ref()
             .map(|pending| &pending.ciphertext)
     }
 
-    pub(crate) fn pq_ratchet_recv(
+    pub fn pq_ratchet_recv(
         &mut self,
         msg: &spqr::SerializedMessage,
     ) -> Result<spqr::MessageKey, spqr::Error> {
@@ -548,7 +545,7 @@ impl SessionState {
         Ok(key)
     }
 
-    pub(crate) fn pq_ratchet_send<R: Rng + CryptoRng>(
+    pub fn pq_ratchet_send<R: Rng + CryptoRng>(
         &mut self,
         csprng: &mut R,
     ) -> Result<(spqr::SerializedMessage, spqr::MessageKey), spqr::Error> {
@@ -557,7 +554,7 @@ impl SessionState {
         Ok((msg, key))
     }
 
-    pub(crate) fn pq_ratchet_state(&self) -> &spqr::SerializedState {
+    pub fn pq_ratchet_state(&self) -> &spqr::SerializedState {
         &self.session.pq_ratchet_state
     }
 }
@@ -594,7 +591,7 @@ impl SessionRecord {
         }
     }
 
-    pub(crate) fn new(state: SessionState) -> Self {
+    pub fn new(state: SessionState) -> Self {
         Self {
             current_session: Some(state),
             previous_sessions: Vec::new(),
@@ -617,7 +614,7 @@ impl SessionRecord {
     /// Returns `Ok(true)` if such a session was found, `Ok(false)` if not, and
     /// `Err(InvalidSessionError)` if an invalid session was found during the search (whether
     /// current or not).
-    pub(crate) fn promote_matching_session(
+    pub fn promote_matching_session(
         &mut self,
         version: u32,
         alice_base_key: &[u8],
@@ -651,19 +648,19 @@ impl SessionRecord {
         Ok(false)
     }
 
-    pub(crate) fn session_state(&self) -> Option<&SessionState> {
+    pub fn session_state(&self) -> Option<&SessionState> {
         self.current_session.as_ref()
     }
 
-    pub(crate) fn session_state_mut(&mut self) -> Option<&mut SessionState> {
+    pub fn session_state_mut(&mut self) -> Option<&mut SessionState> {
         self.current_session.as_mut()
     }
 
-    pub(crate) fn set_session_state(&mut self, session: SessionState) {
+    pub fn set_session_state(&mut self, session: SessionState) {
         self.current_session = Some(session);
     }
 
-    pub(crate) fn previous_session_states(
+    pub fn previous_session_states(
         &self,
     ) -> impl ExactSizeIterator<Item = Result<SessionState, InvalidSessionError>> + '_ {
         self.previous_sessions.iter().map(|bytes| {
@@ -673,16 +670,12 @@ impl SessionRecord {
         })
     }
 
-    pub(crate) fn promote_old_session(
-        &mut self,
-        old_session: usize,
-        updated_session: SessionState,
-    ) {
+    pub fn promote_old_session(&mut self, old_session: usize, updated_session: SessionState) {
         self.previous_sessions.remove(old_session);
         self.promote_state(updated_session)
     }
 
-    pub(crate) fn promote_state(&mut self, new_state: SessionState) {
+    pub fn promote_state(&mut self, new_state: SessionState) {
         self.archive_current_state_inner();
         self.current_session = Some(new_state);
     }

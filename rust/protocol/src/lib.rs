@@ -40,7 +40,7 @@ mod session_cipher;
 mod state;
 mod storage;
 mod timestamp;
-
+pub use spqr::SerializedState;
 use error::Result;
 pub use error::SignalProtocolError;
 pub use fingerprint::{DisplayableFingerprint, Fingerprint, ScannableFingerprint};
@@ -60,7 +60,7 @@ pub use protocol::{
 };
 pub use ratchet::{
     initialize_alice_session_record, initialize_bob_session_record, AliceSignalProtocolParameters,
-    BobSignalProtocolParameters, ChainKey, RootKey, UsePQRatchet,
+    BobSignalProtocolParameters, ChainKey, RootKey, UsePQRatchet, CIPHERTEXT_MESSAGE_PRE_KYBER_VERSION
 };
 pub use sealed_sender::{
     sealed_sender_decrypt, sealed_sender_decrypt_to_usmc, sealed_sender_encrypt,
