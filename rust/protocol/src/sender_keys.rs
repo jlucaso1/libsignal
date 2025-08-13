@@ -134,7 +134,7 @@ pub struct SenderKeyState {
 }
 
 impl SenderKeyState {
-    pub(crate) fn new(
+    pub fn new(
         message_version: u8,
         chain_id: u32,
         iteration: u32,
@@ -242,7 +242,11 @@ pub struct SenderKeyRecord {
 }
 
 impl SenderKeyRecord {
-    pub(crate) fn new_empty() -> Self {
+    pub fn set_states_for_testing(&mut self, states: std::collections::VecDeque<SenderKeyState>) {
+        self.states = states;
+    }
+
+    pub fn new_empty() -> Self {
         Self {
             states: VecDeque::with_capacity(consts::MAX_SENDER_KEY_STATES),
         }
