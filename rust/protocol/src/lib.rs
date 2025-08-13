@@ -58,8 +58,8 @@ pub use protocol::{
     PreKeySignalMessage, SenderKeyDistributionMessage, SenderKeyMessage, SignalMessage,
 };
 pub use ratchet::{
-    initialize_alice_session_record, initialize_bob_session_record, AliceSignalProtocolParameters,
-    BobSignalProtocolParameters, ChainKey, RootKey, UsePQRatchet,
+    derive_keys, initialize_alice_session_record, initialize_bob_session_record,
+    AliceSignalProtocolParameters, BobSignalProtocolParameters, ChainKey, RootKey, UsePQRatchet,
     CIPHERTEXT_MESSAGE_PRE_KYBER_VERSION,
 };
 pub use sealed_sender::{

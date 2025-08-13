@@ -18,7 +18,7 @@ use crate::{consts, KeyPair, Result, SessionRecord, SignalProtocolError};
 
 type InitialPQRKey = [u8; 32];
 
-fn derive_keys(has_kyber: bool, secret_input: &[u8]) -> (RootKey, ChainKey, InitialPQRKey) {
+pub fn derive_keys(has_kyber: bool, secret_input: &[u8]) -> (RootKey, ChainKey, InitialPQRKey) {
     let label = if has_kyber {
         b"WhisperText_X25519_SHA-256_CRYSTALS-KYBER-1024".as_slice()
     } else {
