@@ -40,7 +40,6 @@ mod session_cipher;
 mod state;
 mod storage;
 mod timestamp;
-pub use spqr::SerializedState;
 use error::Result;
 pub use error::SignalProtocolError;
 pub use fingerprint::{DisplayableFingerprint, Fingerprint, ScannableFingerprint};
@@ -60,7 +59,8 @@ pub use protocol::{
 };
 pub use ratchet::{
     initialize_alice_session_record, initialize_bob_session_record, AliceSignalProtocolParameters,
-    BobSignalProtocolParameters, ChainKey, RootKey, UsePQRatchet, CIPHERTEXT_MESSAGE_PRE_KYBER_VERSION
+    BobSignalProtocolParameters, ChainKey, RootKey, UsePQRatchet,
+    CIPHERTEXT_MESSAGE_PRE_KYBER_VERSION,
 };
 pub use sealed_sender::{
     sealed_sender_decrypt, sealed_sender_decrypt_to_usmc, sealed_sender_encrypt,
@@ -73,9 +73,10 @@ pub use session::{process_prekey, process_prekey_bundle};
 pub use session_cipher::{
     message_decrypt, message_decrypt_prekey, message_decrypt_signal, message_encrypt,
 };
+pub use spqr::SerializedState;
 pub use state::{
     GenericSignedPreKey, KyberPreKeyId, KyberPreKeyRecord, PreKeyBundle, PreKeyBundleContent,
-    PreKeyId, PreKeyRecord, SessionRecord, SignedPreKeyId, SignedPreKeyRecord,
+    PreKeyId, PreKeyRecord, SessionRecord, SessionState, SignedPreKeyId, SignedPreKeyRecord,
 };
 pub use storage::{
     Direction, IdentityChange, IdentityKeyStore, InMemIdentityKeyStore, InMemKyberPreKeyStore,
