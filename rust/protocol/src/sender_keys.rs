@@ -50,15 +50,15 @@ impl SenderMessageKey {
         Self::new(smk.iteration, smk.seed)
     }
 
-    pub(crate) fn iteration(&self) -> u32 {
+    pub fn iteration(&self) -> u32 {
         self.iteration
     }
 
-    pub(crate) fn iv(&self) -> &[u8] {
+    pub fn iv(&self) -> &[u8] {
         &self.iv
     }
 
-    pub(crate) fn cipher_key(&self) -> &[u8] {
+    pub fn cipher_key(&self) -> &[u8] {
         &self.cipher_key
     }
 
@@ -89,11 +89,11 @@ impl SenderChainKey {
         }
     }
 
-    pub(crate) fn iteration(&self) -> u32 {
+    pub fn iteration(&self) -> u32 {
         self.iteration
     }
 
-    pub(crate) fn seed(&self) -> &[u8] {
+    pub fn seed(&self) -> &[u8] {
         &self.chain_key
     }
 
@@ -167,14 +167,14 @@ impl SenderKeyState {
         Self { state }
     }
 
-    pub(crate) fn message_version(&self) -> u32 {
+    pub fn message_version(&self) -> u32 {
         match self.state.message_version {
             0 => 3, // the first SenderKey version
             v => v,
         }
     }
 
-    pub(crate) fn chain_id(&self) -> u32 {
+    pub fn chain_id(&self) -> u32 {
         self.state.chain_id
     }
 
@@ -293,7 +293,7 @@ impl SenderKeyRecord {
         self.states.iter().map(|state| state.chain_id())
     }
 
-    pub(crate) fn add_sender_key_state(
+    pub fn add_sender_key_state(
         &mut self,
         message_version: u8,
         chain_id: u32,

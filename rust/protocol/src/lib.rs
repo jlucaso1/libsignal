@@ -73,6 +73,7 @@ pub use session::{process_prekey, process_prekey_bundle};
 pub use session_cipher::{
     message_decrypt, message_decrypt_prekey, message_decrypt_signal, message_encrypt,
 };
+pub use signal_crypto::aes_256_cbc_encrypt;
 pub use spqr::SerializedState;
 pub use state::{
     GenericSignedPreKey, KyberPreKeyId, KyberPreKeyRecord, PreKeyBundle, PreKeyBundleContent,
@@ -85,3 +86,5 @@ pub use storage::{
     SessionStore, SignedPreKeyStore,
 };
 pub use timestamp::Timestamp;
+
+pub use crate::protocol::SENDERKEY_MESSAGE_CURRENT_VERSION;
