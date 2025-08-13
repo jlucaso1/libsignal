@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
-mod keys;
+pub mod keys;
 mod params;
 
 use rand::{CryptoRng, Rng};
 
-pub(crate) use self::keys::{ChainKey, MessageKeyGenerator, RootKey};
+pub use self::keys::{ChainKey, MessageKeyGenerator, RootKey};
 pub use self::params::{AliceSignalProtocolParameters, BobSignalProtocolParameters, UsePQRatchet};
 use crate::protocol::{CIPHERTEXT_MESSAGE_CURRENT_VERSION, CIPHERTEXT_MESSAGE_PRE_KYBER_VERSION};
 use crate::state::SessionState;
@@ -61,7 +61,7 @@ fn spqr_chain_params(self_connection: bool) -> spqr::ChainParams {
     }
 }
 
-pub(crate) fn initialize_alice_session<R: Rng + CryptoRng>(
+pub fn initialize_alice_session<R: Rng + CryptoRng>(
     parameters: &AliceSignalProtocolParameters,
     mut csprng: &mut R,
 ) -> Result<SessionState> {
@@ -153,9 +153,7 @@ pub(crate) fn initialize_alice_session<R: Rng + CryptoRng>(
     Ok(session)
 }
 
-pub(crate) fn initialize_bob_session(
-    parameters: &BobSignalProtocolParameters,
-) -> Result<SessionState> {
+pub fn initialize_bob_session(parameters: &BobSignalProtocolParameters) -> Result<SessionState> {
     let local_identity = parameters.our_identity_key_pair().identity_key();
 
     let mut secrets = Vec::with_capacity(32 * 5);

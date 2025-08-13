@@ -10,16 +10,16 @@ use arrayref::array_ref;
 use crate::proto::storage::session_structure;
 use crate::{crypto, PrivateKey, PublicKey, Result};
 
-pub(crate) enum MessageKeyGenerator {
+pub enum MessageKeyGenerator {
     Keys(MessageKeys),
     Seed((Vec<u8>, u32)),
 }
 
 impl MessageKeyGenerator {
-    pub(crate) fn new_from_seed(seed: &[u8], counter: u32) -> Self {
+    pub fn new_from_seed(seed: &[u8], counter: u32) -> Self {
         Self::Seed((seed.to_vec(), counter))
     }
-    pub(crate) fn generate_keys(self, pqr_key: spqr::MessageKey) -> MessageKeys {
+    pub fn generate_keys(self, pqr_key: spqr::MessageKey) -> MessageKeys {
         match self {
             Self::Seed((seed, counter)) => {
                 MessageKeys::derive_keys(&seed, pqr_key.as_deref(), counter)
@@ -32,7 +32,7 @@ impl MessageKeyGenerator {
             }
         }
     }
-    pub(crate) fn into_pb(self) -> session_structure::chain::MessageKey {
+    pub fn into_pb(self) -> session_structure::chain::MessageKey {
         match self {
             Self::Keys(k) => session_structure::chain::MessageKey {
                 cipher_key: k.cipher_key().to_vec(),
@@ -50,7 +50,7 @@ impl MessageKeyGenerator {
             },
         }
     }
-    pub(crate) fn from_pb(
+    pub fn from_pb(
         pb: session_structure::chain::MessageKey,
     ) -> std::result::Result<Self, &'static str> {
         Ok(if pb.seed.is_empty() {
@@ -79,7 +79,7 @@ impl MessageKeyGenerator {
 }
 
 #[derive(Clone, Copy)]
-pub(crate) struct MessageKeys {
+pub struct MessageKeys {
     cipher_key: [u8; 32],
     mac_key: [u8; 32],
     iv: [u8; 16],
@@ -87,7 +87,7 @@ pub(crate) struct MessageKeys {
 }
 
 impl MessageKeys {
-    pub(crate) fn derive_keys(
+    pub fn derive_keys(
         input_key_material: &[u8],
         optional_salt: Option<&[u8]>,
         counter: u32,
@@ -106,28 +106,28 @@ impl MessageKeys {
     }
 
     #[inline]
-    pub(crate) fn cipher_key(&self) -> &[u8; 32] {
+    pub fn cipher_key(&self) -> &[u8; 32] {
         &self.cipher_key
     }
 
     #[inline]
-    pub(crate) fn mac_key(&self) -> &[u8; 32] {
+    pub fn mac_key(&self) -> &[u8; 32] {
         &self.mac_key
     }
 
     #[inline]
-    pub(crate) fn iv(&self) -> &[u8; 16] {
+    pub fn iv(&self) -> &[u8; 16] {
         &self.iv
     }
 
     #[inline]
-    pub(crate) fn counter(&self) -> u32 {
+    pub fn counter(&self) -> u32 {
         self.counter
     }
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct ChainKey {
+pub struct ChainKey {
     key: [u8; 32],
     index: u32,
 }
@@ -136,28 +136,28 @@ impl ChainKey {
     const MESSAGE_KEY_SEED: [u8; 1] = [0x01u8];
     const CHAIN_KEY_SEED: [u8; 1] = [0x02u8];
 
-    pub(crate) fn new(key: [u8; 32], index: u32) -> Self {
+    pub fn new(key: [u8; 32], index: u32) -> Self {
         Self { key, index }
     }
 
     #[inline]
-    pub(crate) fn key(&self) -> &[u8; 32] {
+    pub fn key(&self) -> &[u8; 32] {
         &self.key
     }
 
     #[inline]
-    pub(crate) fn index(&self) -> u32 {
+    pub fn index(&self) -> u32 {
         self.index
     }
 
-    pub(crate) fn next_chain_key(&self) -> Self {
+    pub fn next_chain_key(&self) -> Self {
         Self {
             key: self.calculate_base_material(Self::CHAIN_KEY_SEED),
             index: self.index + 1,
         }
     }
 
-    pub(crate) fn message_keys(&self) -> MessageKeyGenerator {
+    pub fn message_keys(&self) -> MessageKeyGenerator {
         MessageKeyGenerator::new_from_seed(
             &self.calculate_base_material(Self::MESSAGE_KEY_SEED),
             self.index,
@@ -170,20 +170,20 @@ impl ChainKey {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct RootKey {
+pub struct RootKey {
     key: [u8; 32],
 }
 
 impl RootKey {
-    pub(crate) fn new(key: [u8; 32]) -> Self {
+    pub fn new(key: [u8; 32]) -> Self {
         Self { key }
     }
 
-    pub(crate) fn key(&self) -> &[u8; 32] {
+    pub fn key(&self) -> &[u8; 32] {
         &self.key
     }
 
-    pub(crate) fn create_chain(
+    pub fn create_chain(
         self,
         their_ratchet_key: &PublicKey,
         our_ratchet_key: &PrivateKey,

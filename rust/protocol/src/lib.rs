@@ -49,7 +49,7 @@ pub use group_cipher::{
     process_sender_key_distribution_message,
 };
 pub use identity_key::{IdentityKey, IdentityKeyPair};
-pub use libsignal_core::curve::{KeyPair, PrivateKey, PublicKey, CurveError};
+pub use libsignal_core::curve::{CurveError, KeyPair, PrivateKey, PublicKey};
 pub use libsignal_core::{
     Aci, DeviceId, Pni, ProtocolAddress, ServiceId, ServiceIdFixedWidthBinaryBytes, ServiceIdKind,
 };
@@ -60,7 +60,7 @@ pub use protocol::{
 };
 pub use ratchet::{
     initialize_alice_session_record, initialize_bob_session_record, AliceSignalProtocolParameters,
-    BobSignalProtocolParameters, UsePQRatchet,
+    BobSignalProtocolParameters, ChainKey, RootKey, UsePQRatchet,
 };
 pub use sealed_sender::{
     sealed_sender_decrypt, sealed_sender_decrypt_to_usmc, sealed_sender_encrypt,

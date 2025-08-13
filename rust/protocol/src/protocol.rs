@@ -472,20 +472,26 @@ impl SenderKeyMessage {
             iteration: Some(iteration),
             ciphertext: Some(ciphertext.to_vec()),
         };
-        let proto_message_len = proto_message.encoded_len();
-        let mut serialized = Vec::with_capacity(1 + proto_message_len + Self::SIGNATURE_LEN);
-        serialized.push(((message_version & 0xF) << 4) | SENDERKEY_MESSAGE_CURRENT_VERSION);
-        proto_message
-            .encode(&mut serialized)
-            .expect("can always append to a buffer");
-        let signature = signature_key.calculate_signature(&serialized, csprng)?;
-        serialized.extend_from_slice(&signature[..]);
+
+        let proto_bytes = proto_message.encode_to_vec();
+
+        let signature = signature_key
+            .calculate_signature(&proto_bytes, csprng)
+            .map_err(|_| SignalProtocolError::SignatureValidationFailed)?;
+
+        let shifted_version = (message_version << 4) | 3u8;
+
+        let mut serialized = vec![shifted_version];
+
+        serialized.extend_from_slice(&proto_bytes);
+        serialized.extend_from_slice(&signature);
+
         Ok(Self {
-            message_version: SENDERKEY_MESSAGE_CURRENT_VERSION,
+            message_version,
             chain_id,
             iteration,
             ciphertext,
-            serialized: serialized.into_boxed_slice(),
+            serialized: Box::from(serialized),
         })
     }
 
